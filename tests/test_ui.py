@@ -4,6 +4,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 BASE = os.environ.get("BASE_URL", "http://localhost:8000")
 SELENIUM_REMOTE_URL = os.environ.get("SELENIUM_REMOTE_URL")
@@ -35,6 +36,7 @@ def test_signup_with_strong_password_reaches_welcome_page():
         driver.find_element(By.NAME, "username").send_keys("ui_dave")
         driver.find_element(By.NAME, "password").send_keys("Trqm4-Zxpl92-Bv")
         driver.find_element(By.TAG_NAME, "button").click()
+        WebDriverWait(driver, 10).until(lambda d: d.title == "Welcome")
         assert "Welcome, ui_dave" in driver.page_source
     finally:
         driver.quit()
