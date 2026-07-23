@@ -12,6 +12,12 @@ def get_connection():
     return psycopg2.connect(os.environ["DATABASE_URL"])
 
 
+def user_exists(username, conn):
+    with conn.cursor() as cur:
+        cur.execute('SELECT 1 FROM "2402278" WHERE username = %s', (username,))
+        return cur.fetchone() is not None
+
+
 @app.route("/")
 def home():
     return render_template("index.html", error=request.args.get("error"))
@@ -48,12 +54,12 @@ def login():
 
     conn = get_connection()
     try:
-        valid = username and is_valid_password(password, conn)
+        valid = username and user_exists(username, conn) and is_valid_password(password, conn)
     finally:
         conn.close()
 
     if not valid:
-        return redirect(url_for("home", error="Password does not meet requirements"))
+        return redirect(url_for("home", error="Invalid username or password"))
 
     return render_template("welcome.html", username=username, password=password)
 
