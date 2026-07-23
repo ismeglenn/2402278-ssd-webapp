@@ -1,0 +1,88 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@1.1.0
+        with:
+          project: "SSD-Practical-Test-Webapp"
+          path: "webapp"
+          format: "HTML"
+          out: "dependency-check-report"
+        env:
+          # Requires a free NVD API key stored as the repo secret NVD_API_KEY
+          # (https://nvd.nist.gov/developers/request-an-api-key) -- without
+          # it the NVD feed is heavily rate-limited for anonymous requests.
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dependency-Check-Report
+          path: dependency-check-report
+
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start web app stack
+        run: docker compose up -d --build db webapp
+
+      - name: Wait for webapp to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/ && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Run integration tests
+        run: pytest tests/test_integration.py -v
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
+
+  ui-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start web app stack
+        run: docker compose up -d --build db webapp
+
+      - name: Wait for webapp to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/ && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Run UI tests over HTTP (headless Chrome, preinstalled on ubuntu-latest)
+        run: pytest tests/test_ui.py -v
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
