@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+  <title>Home</title>
+  <script src="/static/validate.js"></script>
+</head>
+<body>
+  <h1>Login</h1>
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+  <form id="login-form" method="post" action="/login">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" id="login-password" placeholder="Password" required>
+    <p id="login-error" style="color:red"></p>
+    <button type="submit">Login</button>
+  </form>
+  <p><a href="/signup">Create an account</a></p>
+  <script>attachValidation("login-form", "login-password", "login-error");</script>
+</body>
+</html>
