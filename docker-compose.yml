@@ -16,6 +16,7 @@ services:
     container_name: ssd-webapp
     environment:
       - DATABASE_URL=postgresql://app:app_password@db:5432/ssd_app
+      - SECRET_KEY=62bd105b5e54ac60a24dd05d55eaae96781b53acef98ab7ab2b170ba4d717015
     ports:
       - "8000:8000"
     depends_on:

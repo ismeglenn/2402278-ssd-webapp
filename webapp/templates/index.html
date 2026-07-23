@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <title>Home</title>
   <script src="/static/validate.js"></script>
@@ -8,6 +8,7 @@
   <h1>Login</h1>
   {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
   <form id="login-form" method="post" action="/login">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="text" name="username" placeholder="Username" required>
     <input type="password" name="password" id="login-password" placeholder="Password" required>
     <p id="login-error" style="color:red"></p>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <title>Create Account</title>
   <script src="/static/validate.js"></script>
@@ -7,6 +7,7 @@
 <body>
   <h1>Create Account</h1>
   <form id="signup-form" method="post" action="/signup">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="text" name="username" placeholder="Username" required>
     <input type="password" name="password" id="signup-password" placeholder="Password" required>
     <p id="signup-error" style="color:red"></p>

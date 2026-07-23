@@ -2,10 +2,13 @@ import os
 
 import psycopg2
 from flask import Flask, redirect, render_template, request, url_for
+from flask_wtf import CSRFProtect
 
 from password_policy import is_valid_password
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+CSRFProtect(app)
 
 
 def get_connection():
@@ -18,7 +21,7 @@ def user_exists(username, conn):
         return cur.fetchone() is not None
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
     return render_template("index.html", error=request.args.get("error"))
 
