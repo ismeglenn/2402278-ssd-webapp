@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ssd-db
+    environment:
+      - POSTGRES_DB=ssd_app
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app_password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+  webapp:
+    build: ./webapp
+    container_name: ssd-webapp
+    environment:
+      - DATABASE_URL=postgresql://app:app_password@db:5432/ssd_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  git-server:
+    image: gitea/gitea:1.22
+    container_name: ssd-git-server
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__server__DOMAIN=localhost
+      - GITEA__server__SSH_DOMAIN=localhost
+      - GITEA__server__ROOT_URL=http://localhost:3000/
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__security__INSTALL_LOCK=true
+    volumes:
+      - gitea-data:/data
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    restart: unless-stopped
+
+volumes:
+  gitea-data:
+  db-data:
