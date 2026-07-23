@@ -2,6 +2,9 @@ name: CI
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
@@ -56,6 +59,32 @@ jobs:
       - name: Stop stack
         if: always()
         run: docker compose down -v
+
+  eslint-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # required so upload-sarif can publish to the Security tab
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint security scan
+        run: |
+          mkdir -p reports
+          npx eslint . --format @microsoft/eslint-formatter-sarif --output-file reports/eslint-results.sarif || true
+
+      - name: Upload SARIF report
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/eslint-results.sarif
 
   ui-test:
     runs-on: ubuntu-latest
